@@ -1,11 +1,12 @@
 from urllib.parse import unquote
 from pyrogram import Client
-from Paws.data import config
+from data import config
 from utils.core import logger
 
 from aiohttp_socks import ProxyConnector
 from pyrogram.raw.functions.messages import RequestAppWebView
 from pyrogram.raw.types import InputBotAppShortName
+from fake_useragent import UserAgent
 from pathlib import Path
 
 import os
@@ -21,7 +22,7 @@ class Paws:
     def __init__(self, thread: int, account: str, proxy=None):
         self.session = None
         self.UserAgent = None
-        self.device = 'Android'
+        self.device = 'android'
         self.user_info = None
         self.token = None
         self.auth_url = None
@@ -74,19 +75,10 @@ class Paws:
 
     async def set_useragent(self):
         try:
-            file_path = os.path.join(os.path.join(Path(__file__).parent.parent, "data"), "UserAgents.json")
-            UserAgent_path = os.path.join(Path(__file__).parent.parent.parent, f"UserAgents{self.device}.json")
-
-            if os.path.exists(UserAgent_path):
-                async with aiofiles.open(UserAgent_path, 'r', encoding='utf-8') as file:
-                    content = await file.read()
-                    UserAgent_list = json.loads(content)
-
-            else:
-                raise Exception(f"UserAgent{self.device} not found!")
+            file_path = os.path.join(os.path.join(Path(__file__).parent.parent, "data"), "UserAgent.json")
 
             if not os.path.exists(file_path):
-                data = {self.name: random.choice(UserAgent_list)}
+                data = {self.name: UserAgent(os=self.device).random}
                 async with aiofiles.open(file_path, 'w', encoding="utf-8") as file:
                     await file.write(json.dumps(data, ensure_ascii=False, indent=4))
 
@@ -104,7 +96,7 @@ class Paws:
                         return True
 
                     else:
-                        self.UserAgent = random.choice(UserAgent_list)
+                        self.UserAgent = UserAgent(os=self.device).random
                         data[self.name] = self.UserAgent
 
                         async with aiofiles.open(file_path, 'w', encoding='utf-8') as file:
@@ -112,8 +104,7 @@ class Paws:
 
                         return True
                 except json.decoder.JSONDecodeError:
-                    logger.error(
-                        f"useragent | Thread {self.thread} | {self.name} | syntax error in UserAgents json file!")
+                    logger.error(f"useragent | Thread {self.thread} | {self.name} | syntax error in UserAgents json file!")
                     return False
 
         except Exception as err:
@@ -255,7 +246,7 @@ class Paws:
                 web_view = await self.client.invoke(RequestAppWebView(
                     peer=await self.client.resolve_peer('PAWSOG_bot'),
                     app=InputBotAppShortName(bot_id=await self.client.resolve_peer('PAWSOG_bot'), short_name="PAWS"),
-                    platform=self.device.lower(),
+                    platform=self.device,
                     write_allowed=True,
                     start_param=self.ref
                 ))
