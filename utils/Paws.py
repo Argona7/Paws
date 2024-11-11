@@ -232,7 +232,6 @@ class Paws:
                     f"task | Thread {self.thread} | {self.name} | Task claimed: {task['title']}")
                 return True
             else:
-                print(response)
                 logger.success(
                     f"task | Thread {self.thread} | {self.name} | Failed to claim task: {task['title']}")
                 return False
