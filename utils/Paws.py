@@ -150,7 +150,7 @@ class Paws:
                                 await asyncio.sleep(random.randint(*config.MINI_SLEEP))
                                 await self.claim(task)
 
-                        if task["action"] == "link":
+                        elif task["action"] == "link":
                             if task['progress']['total'] > task['progress']['current']:
                                 await asyncio.sleep(random.randint(*config.TASK_SLEEP))
                                 await self.completed(task)
