@@ -135,7 +135,7 @@ class Paws:
                 random.shuffle(tasks)
                 for task in tasks:
                     if task["type"] == "social" and not task['progress']['claimed']:
-                        if "t.me" in task["data"] and ("Follow" in task["title"] or "Channel" in task["title"]):
+                        if "t.me" in task["data"] and ("Follow" in task["title"] or "Join" in task["title"]):
                             if task['progress']['total'] > task['progress']['current']:
                                 async with self.client:
                                     if task["data"].startswith("https://t.me/+"):
@@ -157,13 +157,18 @@ class Paws:
                             elif task['progress']['total'] == task['progress']['current']:
                                 await asyncio.sleep(random.randint(*config.MINI_SLEEP))
                                 await self.claim(task)
+                        
+                        if task["action"] == "none":
+                            if task['progress']['total'] <= task['progress']['current']:
+                                await asyncio.sleep(random.randint(*config.MINI_SLEEP))
+                                await self.claim(task)
 
                     elif task["type"] == "referral" and not task['progress']['claimed']:
                         if task['progress']['total'] == task['progress']['current']:
                             await asyncio.sleep(random.randint(*config.MINI_SLEEP))
                             await self.claim(task)
 
-                    elif task["type"] == "emojiName":
+                    elif task["type"] == "emojiName" and not task['progress']['claimed']:
                         if task['progress']['total'] > task['progress']['current']:
                             await self.client.connect()
                             user = await self.client.get_me()
@@ -176,6 +181,7 @@ class Paws:
                         elif task['progress']['total'] == task['progress']['current']:
                             await asyncio.sleep(random.randint(*config.MINI_SLEEP))
                             await self.claim(task)
+
 
             logger.info(f"main | Thread {self.thread} | {self.name} | Account terminated!")
             await self.session.close()
